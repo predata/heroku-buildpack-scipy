@@ -4,11 +4,9 @@ Heroku buildpack: Python, Numpy, and Scipy
 This is a custom [Heroku buildpack](http://devcenter.heroku.com/articles/buildpacks)
 for Python apps that use NumPy and/or SciPy, powered by [pip](http://www.pip-installer.org/).
 
-Please open a GitHub for any problems encountered or feature requests.
-If are using this project and found it useful, please let me know! (Preferably
-by email: brandon.k.liu@gmail.com). I maintain this project on my spare time,
-and I am much more motivated to work on it if I know there are people who are
-benefiting.
+This repo is a repo maintained for use at Predata. If you would like to use something more
+carefully maintained, please check out the active fork that this is based on at
+https://github.com/thenovices/heroku-buildpack-scipy
 
 Details
 -------
@@ -17,9 +15,11 @@ This buildpack currently supports:
 
 NumPy:
   * 1.9.1
+  * 1.9.2
 
 SciPy:
   * 0.14.0 (compiled against NumPy 1.9.1)
+  * 0.16.0 (compiled against NumPy 1.9.2)
 
 Note: SciPy should be compiled against the right minor version of NumPy, but
 the patch version doesn't matter, e.g., SciPy 0.15.1 can be compiled against
