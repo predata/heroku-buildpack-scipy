@@ -7,6 +7,8 @@
 # Fail fast and fail hard.
 set -eo pipefail
 
+[ "$BUILDPACK_XTRACE" ] && set -o xtrace
+
 # Prepend proper path for virtualenv hackery. This will be deprecated soon.
 export PATH=:/usr/local/bin:$PATH
 
@@ -26,11 +28,11 @@ LEGACY_TRIGGER="lib/python2.7"
 PROFILE_PATH="$BUILD_DIR/.profile.d/python.sh"
 WEBCONCURRENCY_PROFILE_PATH="$BUILD_DIR/.profile.d/python.webconcurrency.sh"
 
-DEFAULT_PYTHON_VERSION="python-2.7.9"
+DEFAULT_PYTHON_VERSION="python-2.7.10"
 DEFAULT_PYTHON_STACK="cedar"
 PYTHON_EXE="/app/.heroku/python/bin/python"
-PIP_VERSION="7.1.2"
-SETUPTOOLS_VERSION="18.3.1"
+PIP_VERSION="7.1.0"
+SETUPTOOLS_VERSION="18.1"
 
 # Setup bpwatch
 export PATH=$PATH:$ROOT_DIR/vendor/bpwatch
@@ -66,20 +68,25 @@ source $BIN_DIR/utils
 APP_DIR='/app'
 TMP_APP_DIR=$CACHE_DIR/tmp_app_dir
 
-# Copy Anvil app dir to temporary storage...
-bpwatch start anvil_appdir_stage
+# Skip these steps for Docker.
+if [[ ! "$DOCKER_BUILD" ]]; then
+
+  # Copy Anvil app dir to temporary storage...
+  bpwatch start anvil_appdir_stage
   if [ "$SLUG_ID" ]; then
     mkdir -p $TMP_APP_DIR
     deep-mv $APP_DIR $TMP_APP_DIR
   else
     deep-rm $APP_DIR
   fi
-bpwatch stop anvil_appdir_stage
+  bpwatch stop anvil_appdir_stage
 
-# Copy Application code in.
-bpwatch start appdir_stage
-  deep-mv $BUILD_DIR $APP_DIR
-bpwatch stop appdir_stage
+  # Copy Application code in.
+  bpwatch start appdir_stage
+    deep-mv $BUILD_DIR $APP_DIR
+  bpwatch stop appdir_stage
+fi
+
 
 # Set new context.
 ORIG_BUILD_DIR=$BUILD_DIR
@@ -107,6 +114,7 @@ bpwatch stop pre_compile
 if [ ! -f requirements.txt ]; then
   echo "-e ." > requirements.txt
 fi
+
 
 # Sticky runtimes.
 if [ -f $CACHE_DIR/.heroku/python-version ]; then
@@ -166,7 +174,10 @@ source $BIN_DIR/steps/pylibmc
 # Libffi support.
 source $BIN_DIR/steps/cryptography
 
-# Numpy/scipy support
+# GDAL support.
+source $BIN_DIR/steps/gdal
+
+# Numpy / Scipy support.
 source $BIN_DIR/steps/numpy-scipy
 
 # Install dependencies with Pip.
@@ -179,8 +190,19 @@ sub-env $BIN_DIR/steps/collectstatic
 # ### Finalize
 #
 
+# Set context environment variables.
+set-env PATH '$HOME/.heroku/python/bin:$PATH'
+set-env PYTHONUNBUFFERED true
+set-env PYTHONHOME /app/.heroku/python
+set-env LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LIBRARY_PATH'
+set-env LD_LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LD_LIBRARY_PATH'
+set-default-env LANG en_US.UTF-8
+set-default-env PYTHONHASHSEED random
+set-default-env PYTHONPATH /app/
+
 # Install sane-default script for WEB_CONCURRENCY environment variable.
 cp $ROOT_DIR/vendor/python.webconcurrency.sh $WEBCONCURRENCY_PROFILE_PATH
+
 
 # Experimental post_compile hook.
 bpwatch start post_compile
@@ -196,27 +218,18 @@ bpwatch start dump_cache
 bpwatch stop dump_cache
 
 # ### Fin.
-bpwatch start appdir_commit
-  deep-mv $BUILD_DIR $ORIG_BUILD_DIR
-bpwatch stop appdir_commit
+if [[ ! "$DOCKER_BUILD" ]]; then
 
-bpwatch start anvil_appdir_commit
+  bpwatch start appdir_commit
+    deep-mv $BUILD_DIR $ORIG_BUILD_DIR
+  bpwatch stop appdir_commit
+
+  bpwatch start anvil_appdir_commit
   if [ "$SLUG_ID" ]; then
     deep-mv $TMP_APP_DIR $APP_DIR
   fi
 
-bpwatch stop anvil_appdir_commit
-bpwatch stop compile
+  bpwatch stop anvil_appdir_commit
+  bpwatch stop compile
+fi
 
-# Set context environment variables.
-# This is moved down here because for some reason, bpwatch `import os` fails
-# if this is placed further up in its original location. I don't know why that
-# error occurs. [brandon]
-set-env PATH '$HOME/.heroku/python/bin:$PATH'
-set-env PYTHONUNBUFFERED true
-set-env PYTHONHOME /app/.heroku/python
-set-env LIBRARY_PATH /app/.heroku/vendor/lib:/app/.heroku/python/lib
-set-env LD_LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LD_LIBRARY_PATH'
-set-default-env LANG en_US.UTF-8
-set-default-env PYTHONHASHSEED random
-set-default-env PYTHONPATH /app/
