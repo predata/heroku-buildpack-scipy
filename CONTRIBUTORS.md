@@ -8,6 +8,7 @@ Inspiration / Base Code
 - wyn (@wyn)
 - Toon Timbermont (@ToonTimbermont)
 - Danilo Bargen (@dbrgn)
+- Brandon Liu (@thenovices)
 
 Precompiled Binaries
 --------------------
@@ -17,7 +18,8 @@ Precompiled Binaries
 Main Author of this Fork
 ------------------------
 
-- Brandon Liu (@thenovices)
+- John Urbanik (@johnurbanik)
+
 
 Bugfixes, Features, Other Improvements
 --------------------------------------

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
 # This script serves as the NumPy and SciPy build step of the
-# [**Python Buildpack**](https://github.com/heroku/heroku-buildpack-python) 
-# compiler. 
-# 
-# A [buildpack](http://devcenter.heroku.com/articles/buildpacks) is an 
+# [**Python Buildpack**](https://github.com/heroku/heroku-buildpack-python)
+# compiler.
+#
+# A [buildpack](http://devcenter.heroku.com/articles/buildpacks) is an
 # adapter between a Python application and Heroku's runtime.
 #
 # This script is invoked by [`bin/compile`](/).
 
 source $BIN_DIR/utils
 
-VENDORED_GIT_PREFIX="https://raw.githubusercontent.com/thenovices/npscipy-binaries/master"
+VENDORED_GIT_PREFIX="https://raw.githubusercontent.com/predata/npscipy-binaries/master"
 PY_PKGS="python/lib/python2.7/site-packages"
 
 function install_binaries {
