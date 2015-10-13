@@ -28,10 +28,10 @@ LEGACY_TRIGGER="lib/python2.7"
 PROFILE_PATH="$BUILD_DIR/.profile.d/python.sh"
 WEBCONCURRENCY_PROFILE_PATH="$BUILD_DIR/.profile.d/python.webconcurrency.sh"
 
-DEFAULT_PYTHON_VERSION="python-2.7.12"
+DEFAULT_PYTHON_VERSION="python-2.7.10"
 DEFAULT_PYTHON_STACK="cedar"
 PYTHON_EXE="/app/.heroku/python/bin/python"
-PIP_VERSION="7.1.0"
+PIP_VERSION="7.1.2"
 SETUPTOOLS_VERSION="18.1"
 
 # Setup bpwatch
